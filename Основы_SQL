@@ -1,0 +1,189 @@
+--Оператор SELECT
+SELECT * FROM superheroes - Выбрать всю таблицу
+
+--Выбор столбцов в SELECT
+SELECT name, appearances FROM superheroes
+
+--Псвевдонимы столбцов в SELECT
+SELECT name AS hero_name, appearances FROM superheroes
+SELECT name hero_name, appearances FROM superheroes
+
+--Выбор уникальных значений столбцов в SELECT (align - название стобца)
+SELECT DISTINCT(align) FROM superheroes
+
+--Ограничение количества извлекаемых строк
+SELECT DISTINCT(hair) FROM superheroes LIMIT 10
+
+--Фильтрация данных в SQL: WHERE
+--Выбор строк в SELECT
+SELECT * FROM superheroes WHERE gender = 'Female Characters'
+
+--Операторы стравнения в WHERE
+= - Равно
+<>, != - Неравно
+> - Больше
+>= - Больше или равно
+< - Меньше
+<= - Меньше или равно
+BETWEEN - Значение находится в указаном диапазоне
+IN - Значение входит в список
+LIKE - Проверка строки на соответствие шаблону
+
+--Использование BETWEEN в WHERE
+SELECT * FROM superheroes WHERE year BETWEEN 2000 and 2005
+
+--Использование IN в WHERE
+SELECT * FROM superheroes WHERE hair IN ('Strawberry Blond Hair', 'Red Hair', 'Auburn Hair')
+
+--Использование LIKE в WHERE
+% - Любое количество символов (включая 0 символов)
+_ - Ровно один символ
+SELECT * FROM superheroes WHERE hair LIKE '%Blond%'
+
+--Логические операции в WHERE
+AND - Логическое И
+OR - Логическое ИЛИ
+NOT - Логическое НЕ
+
+--Использование AND в WHERE
+SELECT * FROM superheroes WHERE gender = 'Female Characters' AND align = 'Bad Characters'
+
+--Использование OR в WHERE
+SELECT * FROM superheroes WHERE hair = 'Red Hair'
+                             OR hair = 'Strawberry Blond Hair'
+                             OR hair = 'Auburn Hair'
+
+--Использование NOT в WHERE
+SELECT * FROM superheroes WHERE hair NOT IN ('Blond Hair', 'Black Hair', 'Brown Hair', 'Red Hair')
+
+--Сортировка в SQL: ORDER BY
+--Сортировка данных в SELECT
+SELECT * FROM superheroes ORDER BY year
+
+--Порядок сортировки в ORDER BY
+ASC(ascending) - Сортировка по возрастанию (используется по умолчанию)
+DESC(descending) - Сортировка по убыванию
+SELECT * FROM superheroes ORDER BY appearances DESC
+
+--Сортировка и фильтры в SELECT
+SELECT * FROM superheroes WHERE align = 'Bad Characters' ORDER BY appearances DESC
+
+--Сортировка и ограничение количества строк
+SELECT * FROM superheroes WHERE align = 'Bad Characters'
+                            AND gender = 'Female Characters'
+                            ORDER BY appearances DESC
+                            LIMIT 5
+
+--Сортирвока по нескольким столбцам (строки сортируются в порядке указания столбцов)
+SELECT * FROM superheroes ORDER BY year, appearances
+
+--Создание таблиц в SQL
+CREATE TABLE superheroes(
+    id INT,
+    name VARCHAR(100),
+    align VARCHAR(30),
+    eye VARCHAR(30),
+    hair VARCHAR(30),
+    gender VARCHAR(30),
+    appearances INT,
+    year INT,
+    universe VARCHAR(10)
+)
+
+--Типы данных в SQL
+CHARACTER(n) (CHAR(n)) - Строка фиксированной длины
+CHARACTER VARYING(n) (VARCHAR(n)) - Строка переменной длины, максимальная длина n
+BOOLEAN - Логический тип данных
+INTEGER (INT) - Целое число
+NUMERIC(p,s) - Действительное число (p - количество значащих цифр, s - количество цифр после запятой). Хранится точно
+REAL - Действительное число одинарной точности
+DOUBLE PRECISION - Действительное число двойной точности
+DATE - Дата
+TIMESTAMP - Дата и время
+
+--Первичный ключ в таблице (первичный ключ нужен для того, чтобы отличать записи друг от друга)
+--Первичный ключ - уникальный идентификатор записи
+CREATE TABLE superheroes(
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    align VARCHAR(30),
+    eye VARCHAR(30),
+    hair VARCHAR(30),
+    gender VARCHAR(30),
+    appearances INT,
+    year INT,
+    universe VARCHAR(10)
+)
+
+--Автоматическое заполнение первичного ключа
+CREATE TABLE superheroes(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    align VARCHAR(30),
+    eye VARCHAR(30),
+    hair VARCHAR(30),
+    gender VARCHAR(30),
+    appearances INT,
+    year INT,
+    universe VARCHAR(10)
+)
+
+--Просмотр сведений о таблице
+\d superheroes - Команда работает в командной строке psql (в pgAdmin не работает)
+
+--Удаление таблицы в SQL
+DROP TABLE superheroes
+DROP TABLE IF EXISTS superheroes
+
+--Изменение таблиц в SQL (Вариантов возможных изменений таблицы большое множество. Смотри документацию ALTER TABLE)
+ALTER TABLE superheroes ADD COLUMN alive BOOLEAN - Добавить столбец
+ALTER TABLE superheroes DROP COLUMN year - Удалить столбец
+ALTER TABLE superheroes RENAME COLUMN name TO hero_name - Переименовать столбец
+ALTER TABLE superheroes RENAME TO comic_characters - Переименовать таблицу
+
+--Вставка данных в таблицу
+--Вставка данных в конкретные столбцы
+INSERT INTO superheroes(name, appearances, universe) VALUES ('Spider-Man', 4043, 'marvel')
+
+--Вставка данных во все столбцы позиционно (Не рекомендуется так делать. Лучше указывать поля явно)
+INSERT INTO superheroes
+VALUES (1, 'Spider-Man (Piter Parker)', 'Good Characters', 'Hazel Eyes', 'Brown Hair',
+        'Male Characters', 4043, 1962, 'marvel')
+
+--Изменение данных в таблице
+UPDATE superheroes SET name = 'Batman', universe = 'dc' WHERE id = 1
+UPDATE superheroes SET gender = 'Man', WHERE gender = 'Male Characters'
+
+--Удаление данных из таблицы
+DELETE FROM superheroes WHERE id = 2
+DELETE FROM superheroes WHERE gender = 'Male Characters'
+
+--Удаление всех данных из таблицы
+DELETE FROM superheroes
+
+--Агрегатные функции в SQL (Функции, использующиеся совместно с группировкой. Получают на вход несколько значений, возвращают одно)
+--Группировка данных  в SQL
+SELECT align, COUNT(*) FROM superheroes GROUP BY align
+
+--Список агрегатных функций в SQL
+AVG - Среднее значение
+COUNT - Количество значений
+MAX - Максимальное значение
+MIN - Минимальное значение
+SUM - Сумма
+
+--Использование агрегатных функций
+SELECT align, COUNT(*), SUM(appearances)
+FROM superheroes
+GROUP BY align
+
+SELECT align, AVG(appearances), SUM(appearances) / COUNT(*) AS average
+FROM superheroes
+GROUP BY align
+
+SELECT year, MIN(appearances), MAX(appearances)
+FROM superheroes
+GROUP BY year
+
+--Агрегатные функции без группировки
+SELECT COUNT(*), MIN(appearances), MAX(appearances), SUM(appearances), AVG(appearances) FROM superheroes
