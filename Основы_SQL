@@ -187,3 +187,71 @@ GROUP BY year
 
 --Агрегатные функции без группировки
 SELECT COUNT(*), MIN(appearances), MAX(appearances), SUM(appearances), AVG(appearances) FROM superheroes
+
+--Фильтрация групповых результатов в SQL
+SELECT hair, COUNT(*) FROM superheroes
+WHERE gender = 'Female Characters'
+GROUP BY hair
+HAVING COUNT(*) > 10
+
+WHERE - Используется для фильтрации строк в исходной таблице
+HAVING - Используется для фильтрации результатов группировки
+
+--Декомпозиция данных в базе
+--Связи между таблицами
+FOREIGN KEY - Внешний ключ (Может содержать только значения на которые ссылается внешний ключ)
+
+--Запрос данных из нескольких таблиц
+--Объединение данных из нескольких таблиц в SELECT
+SELECT products.name, product_types.type_name
+FROM products JOIN product_types
+ON products.type_id = product_types.id
+
+JOIN - Объединение таблиц
+ON - Условия объединения (каким образом мы хотим объединить данные в таблицах)
+
+--Фильтрация данных из нескольких таблиц
+SELECT products.name, product_types.type_name, products.price
+FROM products JOIN product_types
+ON products.type_id = product_types.id
+WHERE product_types.type_name = 'Онлайн-курс'
+
+SELECT products.name, product_types.type_name, products.price
+FROM products JOIN product_types
+ON products.type_id = product_types.id
+WHERE product_types.type_name = 'Вебинар' AND products.price = 0
+
+--Сортировка данных из нескольких таблиц
+SELECT products.name, product_types.type_name, products.price
+FROM products JOIN product_types
+ON products.type_id = product_types.id
+WHERE product_types.type_name = 'Онлайн-курс'
+ORDER BY products.price DESC
+
+--Типы JOIN в SQL
+--Внутреннее объединение (INNER JOIN). Используется по-умолчанию. Можно не писать INNER.
+SELECT products.name, product_types.type_name
+FROM products INNER JOIN product_types
+ON products.type_id = product_types.id
+
+--Внешнее объединение (Если мы хотим, чтобы в объединенный запрос попадали строки для которых нет соответствия в другой таблице)
+--Левое внешнее объединение (Включаются строки слева от JOIN, даже если для них нет соответствующей строки в правой таблице)
+SELECT products.name, product_types.type_name
+FROM products LEFT OUTER JOIN product_types
+ON products.type_id = product_types.id
+
+--Правое внешнее объединение (Включаются строки справа от JOIN, даже если для них нет соответствующей строки в левой таблице)
+SELECT products.name, product_types.type_name
+FROM products RIGHT OUTER JOIN product_types
+ON products.type_id = product_types.id
+
+--Полное внешнее объединение (Включаются строки из обеих таблиц у которых нет соответствующих строк в других таблицах)
+SELECT products.name, product_types.type_name
+FROM products FULL OUTER JOIN product_types
+ON products.type_id = product_types.id
+
+--Перекрестное объединение (Строится с помощью комбинации строк двух таблиц каждая с каждой. На практике используется редко)
+SELECT products.name, product_types.type_name
+FROM products CROSS JOIN product_types
+
+
