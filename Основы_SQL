@@ -254,4 +254,40 @@ ON products.type_id = product_types.id
 SELECT products.name, product_types.type_name
 FROM products CROSS JOIN product_types
 
+--Схема базы данных (Для отрисовки схемы можно использовать сайт drawsql.app)
+--Пример. Продукты в заказе
+SELECT products.id,
+       products.name,
+       products.price,
+       sales.quantity,
+       products.price * sales.quantity AS total
+FROM products JOIN sales
+ON products.id = sales.product_id
+WHERE sales.order_id = 2
 
+--Пример. Все покупки заказчика
+SELECT products.id,
+       products.name,
+       products.price,
+       sales.quantity,
+       products.price * sales.quantity AS total
+FROM products JOIN sales
+    ON products.id = sales.product_id
+    JOIN orders
+    ON orders.id = sales.order_id
+WHERE orders.customer_id = 1
+
+--Поздапросы в SQL (Запросы, которые используются внутри другого запроса)
+SELECT id, name, price
+FROM products
+WHERE price = (SELECT MAX(price) FROM products)
+
+--Пример. Вывести информацию о продуктах, которые были проданы хотя бы один раз.
+SELECT id, name, price
+FROM products
+WHERE id IN (SELECT product_id FROM sales)
+
+--Подзапросы в UPDATE (INSERT, DELETE)
+UPDATE products
+SET price = price + 500
+WHERE type_id = (SELECT id FROM product_types WHERE type_name = 'Книга')
