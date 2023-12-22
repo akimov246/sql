@@ -291,3 +291,198 @@ WHERE id IN (SELECT product_id FROM sales)
 UPDATE products
 SET price = price + 500
 WHERE type_id = (SELECT id FROM product_types WHERE type_name = 'Книга')
+
+--Транзакции в базах данных
+Транзакция - последовательность команд SQL, которые должны быть выполнены полностью или не выполнены вообще.
+
+--Начало транзакции
+START TRANSACTION;
+--Выполнение транзакции
+UPDATE accounts SET balance = balance - 15000
+WHERE account_number = 1234567;
+
+UPDATE accounts SET balance = balance + 15000
+WHERE account_number = 9876543;
+--Фиксация транзакции
+COMMIT;
+--Откат транзакции
+ROLLBACK;
+
+--Индексы в базах данных
+Индексы - такая структура данных в базе, позволяющая быстро определить положение интересующих данных в базе
+
+--Создание индекса
+CREATE INDEX superheroes_name_idx
+ON superheroes(name)
+
+--Порядок сортировки данных в индексе
+CREATE INDEX superheroes_appearances_idx
+ON superheroes(appearances DESC)
+
+--Удаление индекса
+DROP INDEX person_name_idx
+
+--Недостатки индексов
+Изменения в базе данных:
+Изменение в исходной таблице приводит к необходимости изменять все связанные с ней индексы.
+
+Снижение производительности:
+Если индексов много, то при изменении данных в таблице требуется длительное время для обновления индексов.
+
+--Просмотр всех индексов
+SELECT * FROM pg_stat_all_indexes
+
+--Ограничения в базах данных
+Ограничения (CONSTRAINT) - Предназначены для того, чтобы ограничивать некоторые изменения с данными, которые можно выполнять
+в базе, для того, чтобы база данных находилась в согласованном состоянии.
+
+--Типы ограничений
+PRIMARY KEY - Первичный ключ
+NOT NULL - Непустые значения
+UNIQUE - Требует, чтобы столбец содержал уникальные значения
+
+--Первичный ключ из нескольких полей
+CREATE TABLE(
+    product_id INT,
+    order_id INT,
+    quantity INT,
+    PRIMARY KEY(product_id, order_id)
+)
+
+--Ограничения по проверке значений
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT,
+    price INT CHECK (price >= 0)
+)
+
+--Именованные ограничения
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT,
+    price INT CONSTRAINT positive_price CHECK (price >= 0)
+)
+
+--Ограничения на уровне таблицы
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT,
+    price INT,
+    CONSTRAINT positive_price CHECK (price >= 0)
+)
+
+--Ограничения ссылочной целостности (Внешнего ключа/FOREIGN KEY)
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT REFERENCES product_types(id),
+    price INT
+)
+
+--Действия при удалении данных при ссылочной зависимости
+--База данных не даст удалить данные
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT REFERENCES product_types(id),
+            ON DELETE RESTRICT,
+    price INT
+)
+--При удалении какой либо строки из таблицы product_types, все соответствующие записи из таблицы products также будут удалены
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT REFERENCES product_types(id),
+            ON DELETE CASCADE,
+    price INT
+)
+
+--Действия при изменении
+--СУБД будет запрещать изменять строки на которые есть ссылки
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT REFERENCES product_types(id),
+            ON UPDATE RESTRICT,
+    price INT
+)
+--В случае изменения строки, на которую есть ссылки, данные в основной таблице также будут изменены
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT REFERENCES product_types(id),
+            ON UPDATE CASCADE,
+    price INT
+)
+
+--Внешний ключ на уровне таблицы (разницы с предыдущими примерами нет, просто другой способ)
+CREATE TABLE products(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    type_id INT,
+    price INT,
+    FOREIGN KEY(type_id) REFERENCES product_types(id)
+)
+
+--Первичный и Внешний ключи (одни и те же столбцы могут быть одновременно Первичными и Внешними)
+CREATE TABLE sales(
+    product_id INT REFERENCES products(id),
+    order_id INT REFERENCES orders(id),
+    quantity INT,
+    PRIMARY KEY(product_id, order_id)
+)
+
+--Представления в SQL
+Представления (View) - Псевдонимы для запросов SELECT
+
+CREATE VIEW customers_v
+AS SELECT id, name FROM customers
+
+--Запросы к представлениям
+SELECT * FROM customers_v
+
+--Представления с данными из нескольких таблиц
+CREATE VIEW products_v
+AS SELECT products.id, products.name, products.price, product_types.type_name
+FROM products JOIN product_types
+ON products.type_id = product_types.id
+
+--Материализованные представления
+CREATE MATERIALIZED VIEW products_v
+AS SELECT products.id, products.name, products.price, product_types.type_name
+FROM products JOIN product_types
+ON products.type_id = product_types.id
+
+Материализованнео представление - Представление, содержащие данные.
+Имеет смысл создавать для запросов, которые работают достаточно долго и которые запускаются достаточно часто.
+В этом случае создается материализованное представление, запрос запускается один раз, а в следующие разы
+вы делаете запросы к материализованному представлению и извлекаете данные, которые уже подготовлены
+
+--Недостаток материализованных представлений
+Данные в исходных таблицах, на основе которой создано представление, обновляются, а в материализованном представлении
+эти изменения не учитываются, поэтому для материализованного представления необходимо периодически запускать обновление.
+
+--Обновление материализованных представлений
+REFRESH MATERIALIZED VIEW products_v
+
+--Удаление представлений
+DROP VIEW products_v
+DROP MATERIALIZED VIEW products_v
+
+--Что не изучено
+Возможности SQL:
+Общие табличные выражения - COMMON TABLE EXPRESSIONS
+Оконные фукнции
+Иерархические и рекурсивные запросы
+Функции работы с датами/строками и т.п.
+
+Проектирование баз данных:
+Реляционная теория/нормальные формы
+Проектирование схемы базы данных
+
+Системы управления базами данных:
+Внутренне устройство/администрирование
+Оптимизация производительности/Большие объемы данных
